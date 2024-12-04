@@ -3,12 +3,14 @@
 $data = file("input.txt");
 $parsed = array();
 $total_safe = 0;
+$total_safe_corrected = 0;
 $total_unsafe = 0;
 
-function report_safety($data): string
+function report_safety($data): array
 {
     $last_value = "";
     $direction = "dsc";
+    $bad_data = array();
     foreach ($data as $index => $current_value) {
         if (!empty($last_value)) {
             $asc = false;
@@ -60,12 +62,28 @@ function report_safety($data): string
                 }
             }
             if (!$asc && !$dsc) {
-                return "unsafe";
+                $bad_data[] = $index;
             }
         }
         $last_value = $current_value;
     }
-    return "safe";
+    if (count($bad_data) > 0) {
+        return array("unsafe", $bad_data);
+    } else {
+        return array("safe", $bad_data);
+    }
+
+}
+
+function report_dampener($data, $indexes)
+{
+    foreach ($indexes as $index) {
+        $new_data = $data;
+        array_splice($new_data, $index, 1);
+        $safety = report_safety($new_data);
+        if ($safety[0] == "safe") return $new_data;
+    }
+    return false;
 }
 
 
@@ -73,12 +91,16 @@ foreach ($data as $index => $line) {
     $line = str_replace("\n", "", $line);
     $data = explode(" ", $line);
     $safety = report_safety($data);
-    $parsed[$index]["result"] = $safety;
+    $dampened = report_dampener($data, $safety[1]);
+    $parsed[$index]["dampened_data"] = $dampened;
+    $parsed[$index]["bad_data"] = $safety[1];
+    $parsed[$index]["result"] = $safety[0];
     $parsed[$index]["data"] = $data;
-    if ($safety == "safe") $total_safe++;
-    if ($safety == "unsafe") $total_unsafe++;
+    if ($safety[0] == "safe") $total_safe++;
+    if (!empty($dampened)) $total_safe_corrected++;
+    if ($safety[0] == "unsafe") $total_unsafe++;
 
-    print($line . " | " . $safety . "\n");
+//    print($line . " | " . $safety[0] . "\n");
 }
 
 $report = fopen('report.json', 'w');
@@ -88,4 +110,8 @@ fclose($report);
 print("\n=== PART ONE ===\n");
 print("Total safe(uncorrected): " . $total_safe . "\n");
 print("Total unsafe(uncorrected): " . $total_unsafe . "\n");
+
+
+print("\n=== PART TWO ===\n");
+print("Total safe(corrected): " . $total_safe + $total_safe_corrected . "\n");
 
