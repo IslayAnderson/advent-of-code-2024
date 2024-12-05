@@ -6,7 +6,8 @@ $total2 = 0;
 $regex = '/mul\((\d{1,9}),(\d{1,9})\)/m';
 //This regex only works in 8.4, and it still doesn't solve the problem
 $regex2 = '/(?<!don\'t\(\).{1,248})(?<=do\(\).{1,248}|^.{1,248})mul\((\d{1,9}),(\d{1,9})\)/mi';
-//$regex2 = '/(?<!don\'t\(\).*)(?<=do\(\).*|^.*)mul\((\d{1,9}),(\d{1,9})\)/mi'; //if PCRE2 wasn't goofy, this would work
+//if PCRE2 wasn't goofy, this would work (edit: it still won't work, but I applaud your enthusiasm)
+//$regex2 = '/(?<!don\'t\(\).*)(?<=do\(\).*|^.*)mul\((\d{1,9}),(\d{1,9})\)/mi';
 preg_match_all($regex, $data, $matches_p1, PREG_SET_ORDER, 0);
 preg_match_all($regex2, $data, $matches_p2, PREG_SET_ORDER, 0);
 
